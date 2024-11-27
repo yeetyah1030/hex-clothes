@@ -137,6 +137,14 @@ void ofApp::draw() {
         if (ofxImGui::VectorCombo("App Mode", &currentListBoxIndex, m_appModes)) {
             m_appMode = (CVC::APP_MODE)currentListBoxIndex;
         }
+
+        // text display and draw most dom colour
+        ImGui::Text("Dominant Color:");
+        ImGui::ColorEdit3("Dominant Color", (float*)&m_dominantColor);
+        ofSetColor(m_dominantColor);
+        ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 10,CVC::VIDEO_BORDER_SIZE + 10, 50, 50);
+
+
         ImGui::ColorEdit3("Selected Color", (float*)m_trackedColor);
         ImGui::Text("\n Instructions: \ get the hex codes of your clothes!");
     }
@@ -195,29 +203,54 @@ void ofApp::mousePressed(int x, int y, int button) {
 void ofApp::processColor(ofxCvColorImage& image) {
     const int numChannelsPerPixel = image.getPixels().getNumChannels();
     const int numChannels = CVC::VIDEO_WIDTH * CVC::VIDEO_HEIGHT * numChannelsPerPixel;
+
+    // storing frequency of colours & the frequency count
+    map<ofColor, int, bool(*)(const ofColor&, const ofColor&)> colorFrequency([](const ofColor& a, const ofColor& b) {
+        return a.getHex() < b.getHex();
+        });
+
     float pixel[3] = { 0.0f, 0.0f, 0.0f };
 
+    for (int i = 0; i < numChannels; i += numChannelsPerPixel) {
+        ofColor color(
+            image.getPixels()[i + 0], // R
+            image.getPixels()[i + 1], // G
+            image.getPixels()[i + 2]  // B
+        );
+
+        // increase frequency of colour in the map
+        colorFrequency[color]++;
+    }
+
+    // find most frequent colour
+    int maxFrequency = 0;
+    ofColor dominantColor;
+
+    for (const auto& pair : colorFrequency) {
+        if (pair.second > maxFrequency) {
+            maxFrequency = pair.second;
+            dominantColor = pair.first;
+        }
+    }
+
+    m_dominantColor = dominantColor;
+
+    // update greyscale
     for (int i = 0; i < numChannels; i += numChannelsPerPixel) {
         pixel[0] = image.getPixels()[i + 0]; // R
         pixel[1] = image.getPixels()[i + 1]; // G
         pixel[2] = image.getPixels()[i + 2]; // B
 
-        //check if tracked color matches pixel color
-        //m_trackedColor is a float color [0.0, 1.0] so we need to convert back to a byte color [0,255]
         if ((abs(pixel[0] - m_trackedColor[0] * 255.0f) < m_threshold) &&
             (abs(pixel[1] - m_trackedColor[1] * 255.0f) < m_threshold) &&
             (abs(pixel[2] - m_trackedColor[2] * 255.0f) < m_threshold)) {
-
-            // color is same = set diff image pixel color to white
             m_grayscaleDiffImage.getPixels()[i / numChannelsPerPixel] = 255;
         }
         else {
-            // color is not same = set diff image pixel color to black
             m_grayscaleDiffImage.getPixels()[i / numChannelsPerPixel] = 0;
         }
     }
 
-    // update cv image
     m_grayscaleDiffImage.flagImageChanged();
 
     // find contours/blobs

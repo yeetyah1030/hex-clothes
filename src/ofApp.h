@@ -21,6 +21,9 @@ public:
 	ofxCvColorImage		m_colorImage;
 	ofxCvGrayscaleImage	m_grayscaleDiffImage;
 
+	// Dominant colours
+	ofColor m_dominantColor;
+
 	//GUI
 	ofxImGui::Gui		m_gui;
 	int					m_threshold;

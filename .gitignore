@@ -54,6 +54,12 @@ ipch/
 # Ignore Visual Studio files
 .vs/
 
+/*/*/*.sln
+/*/*/*.vcxproj
+/*/*/*.vcxproj.user
+/*/*/*.vcxproj.filters
+/*/*/icon.rc
+
 # Eclipse
 .metadata
 local.properties

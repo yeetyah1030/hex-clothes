@@ -7,20 +7,17 @@ void ofApp::setup() {
     ofSetFrameRate(CVC::APP_DESIRED_FRAMERATE);
 
     // cam setup
-    //m_videoGrabber.listDevices();     // find cameras on pc
     m_videoGrabber.setDeviceID(0);
     m_videoGrabber.setDesiredFrameRate(CVC::CAM_DESIRED_FRAMERATE);
     m_videoGrabber.initGrabber(CVC::VIDEO_WIDTH, CVC::VIDEO_HEIGHT);
-    m_camResolutionConflict = (((int)m_videoGrabber.getWidth() != CVC::VIDEO_WIDTH) ||
-        ((int)m_videoGrabber.getHeight() != CVC::VIDEO_HEIGHT));
+    m_camResolutionConflict = (((int)m_videoGrabber.getWidth() != CVC::VIDEO_WIDTH) || ((int)m_videoGrabber.getHeight() != CVC::VIDEO_HEIGHT));
 
     // video setup
     m_videoPlayer.load(CVC::VIDEO_PATH_COLOR);
     m_videoPlayer.setLoopState(OF_LOOP_NORMAL);
     m_videoPlayer.play();
 
-    m_videoResolutionConflict = (((int)m_videoPlayer.getWidth() != CVC::VIDEO_WIDTH) ||
-        ((int)m_videoPlayer.getHeight() != CVC::VIDEO_HEIGHT));
+    m_videoResolutionConflict = (((int)m_videoPlayer.getWidth() != CVC::VIDEO_WIDTH) || ((int)m_videoPlayer.getHeight() != CVC::VIDEO_HEIGHT));
 
     // allocate CV images
     m_colorImage.allocate(CVC::VIDEO_WIDTH, CVC::VIDEO_HEIGHT);
@@ -39,6 +36,9 @@ void ofApp::setup() {
     m_appMode = CVC::APP_MODE::APP_VIDEO;
     m_appModes.push_back("APP_VIDEO");
     m_appModes.push_back("APP_CAM");
+
+    // init dom colour
+    m_dominantColor = ofColor(128, 128, 128);
 }
 
 // UPDATE --------------------------------------------------------------
@@ -56,11 +56,27 @@ void ofApp::update() {
                 m_colorImage.resize(CVC::VIDEO_WIDTH, CVC::VIDEO_HEIGHT);
             }
 
-            processColor(m_colorImage);
+            m_colorProcessor.processColor(
+                m_colorImage,
+                m_threshold,
+                m_minArea,
+                m_maxArea,
+                m_contourFinder,
+                m_grayscaleDiffImage
+            );
+
+            // update dominant color with normalized values
+            if (m_contourFinder.nBlobs > 0) {
+                m_dominantColor = m_colorProcessor.getDominantColor();
+
+                // normalize color values to 0.0-1.0 range
+                m_normalizedColor.r = m_dominantColor.r / 255.0f;
+                m_normalizedColor.g = m_dominantColor.g / 255.0f;
+                m_normalizedColor.b = m_dominantColor.b / 255.0f;
+            }
         }
     }
-
-    break;
+                                 break;
 
     case CVC::APP_MODE::APP_CAM: {
         if (m_camPaused == false) {
@@ -74,11 +90,26 @@ void ofApp::update() {
                 m_colorImage.resize(CVC::VIDEO_WIDTH, CVC::VIDEO_HEIGHT);
             }
 
-            processColor(m_colorImage);
-        }
+            m_colorProcessor.processColor(
+                m_colorImage,
+                m_threshold,
+                m_minArea,
+                m_maxArea,
+                m_contourFinder,
+                m_grayscaleDiffImage
+            );
 
+            if (m_contourFinder.nBlobs > 0) {
+                m_dominantColor = m_colorProcessor.getDominantColor();
+
+                m_normalizedColor.r = m_dominantColor.r / 255.0f;
+                m_normalizedColor.g = m_dominantColor.g / 255.0f;
+                m_normalizedColor.b = m_dominantColor.b / 255.0f;
+
+            }
+        }
     }
-    break;
+                               break;
     }
 }
 
@@ -124,7 +155,7 @@ void ofApp::draw() {
     // draw gui
     m_gui.begin();
     {
-        ImGui::Text("Hex Clothes");
+        ImGui::Text("Color Detection");
         ImGui::SliderInt("Threshold", &m_threshold, 0, 255);
         ImGui::SliderInt("Num of Contours", &m_numContoursConsidered, 0, 30);
         ImGui::SliderFloat("Min. Area", &m_minArea, 0.0f, (float)(CVC::VIDEO_WIDTH * CVC::VIDEO_HEIGHT));
@@ -132,94 +163,38 @@ void ofApp::draw() {
 
         ImGui::Separator();
 
-        ImGui::Text("\n select an app state");
+        ImGui::Text("\n Select an app state");
         static int currentListBoxIndex = 0;
         if (ofxImGui::VectorCombo("App Mode", &currentListBoxIndex, m_appModes)) {
             m_appMode = (CVC::APP_MODE)currentListBoxIndex;
         }
-        ImGui::ColorEdit3("Selected Color", (float*)m_trackedColor);
-        ImGui::Text("\n Instructions: \ get the hex codes of your clothes!");
+
+        // dominant color display
+        ImGui::Text("Dominant Color:");
+        // use the normalized colour for ImGui
+        ImGui::ColorEdit3("Dominant Color", (float*)&m_normalizedColor);
+
+        // draw a rectangle with the dom color
+        ofSetColor(m_dominantColor);
+        ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 10,
+            CVC::VIDEO_BORDER_SIZE + 10, 50, 50);
     }
     m_gui.end();
 }
 
 // FUNCTIONS --------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-
     if (key == 32) { // spacebar
         switch (m_appMode) {
         case CVC::APP_MODE::APP_VIDEO: {
             m_videoPlayer.setPaused(!m_videoPlayer.isPaused());
         }
-
-        break;
+                                     break;
 
         case CVC::APP_MODE::APP_CAM: {
             m_camPaused = !m_camPaused;
         }
-
-        break;
-
+                                   break;
         }
     }
-}
-
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
-    if (button == OF_MOUSE_BUTTON_RIGHT) {
-        // select the colour from the image within bounded video region
-
-        ofRectangle videoRect = ofRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2,
-            CVC::VIDEO_BORDER_SIZE,
-            CVC::VIDEO_WIDTH,
-            CVC::VIDEO_HEIGHT);
-
-        // clamping screenspace to image space
-        int convertX = ofClamp(x, videoRect.getMinX(), videoRect.getMaxX());
-        int convertY = ofClamp(y, videoRect.getMinY(), videoRect.getMaxY());
-
-        // mapping screenspace to image space (by shift coordinate origin
-        convertX -= videoRect.getMinX();
-        convertY -= videoRect.getMinY();
-
-        //get the color using x + y * width function
-        const int index = (convertX + convertY * m_colorImage.getWidth()) * m_colorImage.getPixels().getNumChannels();
-        m_trackedColor[0] = m_colorImage.getPixels()[index + 0] / 255.0f;
-        m_trackedColor[1] = m_colorImage.getPixels()[index + 1] / 255.0f;
-        m_trackedColor[2] = m_colorImage.getPixels()[index + 2] / 255.0f;
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::processColor(ofxCvColorImage& image) {
-    const int numChannelsPerPixel = image.getPixels().getNumChannels();
-    const int numChannels = CVC::VIDEO_WIDTH * CVC::VIDEO_HEIGHT * numChannelsPerPixel;
-    float pixel[3] = { 0.0f, 0.0f, 0.0f };
-
-    for (int i = 0; i < numChannels; i += numChannelsPerPixel) {
-        pixel[0] = image.getPixels()[i + 0]; // R
-        pixel[1] = image.getPixels()[i + 1]; // G
-        pixel[2] = image.getPixels()[i + 2]; // B
-
-        //check if tracked color matches pixel color
-        //m_trackedColor is a float color [0.0, 1.0] so we need to convert back to a byte color [0,255]
-        if ((abs(pixel[0] - m_trackedColor[0] * 255.0f) < m_threshold) &&
-            (abs(pixel[1] - m_trackedColor[1] * 255.0f) < m_threshold) &&
-            (abs(pixel[2] - m_trackedColor[2] * 255.0f) < m_threshold)) {
-
-            // color is same = set diff image pixel color to white
-            m_grayscaleDiffImage.getPixels()[i / numChannelsPerPixel] = 255;
-        }
-        else {
-            // color is not same = set diff image pixel color to black
-            m_grayscaleDiffImage.getPixels()[i / numChannelsPerPixel] = 0;
-        }
-    }
-
-    // update cv image
-    m_grayscaleDiffImage.flagImageChanged();
-
-    // find contours/blobs
-    m_contourFinder.findContours(m_grayscaleDiffImage, m_minArea, m_maxArea, m_numContoursConsidered, false, true);
 }

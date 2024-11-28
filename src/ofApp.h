@@ -6,22 +6,24 @@
 #include "ImHelpers.h"
 
 #include "CVC.h"
+#include "ColorProcessor.h"
+#include "ofColor.h"
 
 class ofApp : public ofBaseApp {
 public:
 	ofVideoPlayer m_videoPlayer;
 	ofVideoGrabber m_videoGrabber;
-	bool m_videoResolutionConflict;	
+	bool m_videoResolutionConflict;
 	bool m_camResolutionConflict;
 	bool m_camPaused;
 
 	ofxCvContourFinder m_contourFinder;
 
-	//CV images
+	// CV images
 	ofxCvColorImage		m_colorImage;
 	ofxCvGrayscaleImage	m_grayscaleDiffImage;
 
-	// Dominant colours
+	// dom colours
 	ofColor m_dominantColor;
 
 	//GUI
@@ -31,20 +33,16 @@ public:
 	float				m_minArea;
 	float				m_maxArea;
 
-	// eyedropper select colour being tracked
-	float m_trackedColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 	//app modes
 	CVC::APP_MODE m_appMode;
 	std::vector<std::string> m_appModes;
+
+	ColorProcessor m_colorProcessor;
+	ofFloatColor m_normalizedColor;
 
 	void setup();
 	void update();
 	void draw();
 
 	void keyPressed(int key);
-	void mousePressed(int x, int y, int button);
-
-	// colour processing
-	void processColor(ofxCvColorImage& image);
 };

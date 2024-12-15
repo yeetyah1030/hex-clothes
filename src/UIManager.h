@@ -3,8 +3,6 @@
 #include "ofMain.h"
 #include "ofxImGui.h"
 #include "CVC.h"
-#include "ofApp.h"
-#include "ColourTheory.h"
 
 class UIManager
 {
@@ -12,19 +10,20 @@ public:
 	UIManager();
 
 	void setup();
-	void update();
-	void draw(ofApp* app);
+	void draw();
+	void updateAppMode(CVC::APP_MODE& appMode);
+	void updateTrackedColor(float trackedColor[4]);
+	void getGuiParams(int& threshold, int& numContours, float& minArea, float& maxArea) const;
 
 private:
 	ofxImGui::Gui m_gui;
-
-	int m_threshold;
-	int m_numContours;
+	int m_threshold; 
+	int m_numContoursConsidered;
 	float m_minArea;
 	float m_maxArea;
 
-	ColourTheory m_colourTheory;
+	float m_trackedColor[4];
 
-
-
+	std::vector<std::string> m_appModes;
+	int m_currentAppModeIndex;
 };

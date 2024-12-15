@@ -82,6 +82,9 @@
     <ClCompile Include="..\..\..\addons\ofxOpenCv\src\ofxCvShortImage.cpp">
       <Filter>addons\ofxOpenCv\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ColorProcessor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -2226,6 +2229,9 @@
       <Filter>addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2</Filter>
     </ClInclude>
     <ClInclude Include="src\CVC.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ColorProcessor.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

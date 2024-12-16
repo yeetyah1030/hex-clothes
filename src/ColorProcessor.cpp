@@ -21,9 +21,9 @@ void ColorProcessor::processColor(ofxCvColorImage& image,
     // process pixels
     for (int i = 0; i < numChannels; i += numChannelsPerPixel) {
         float pixel[3] = {
-            image.getPixels()[i + 0],     // R
-            image.getPixels()[i + 1],     // G
-            image.getPixels()[i + 2]      // B
+            static_cast<float>(image.getPixels()[i + 0]),     // R
+            static_cast<float>(image.getPixels()[i + 1]),     // G
+            static_cast<float>(image.getPixels()[i + 2])      // B
         };
 
         // convert to grayscale

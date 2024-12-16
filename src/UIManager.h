@@ -3,27 +3,17 @@
 #include "ofMain.h"
 #include "ofxImGui.h"
 #include "CVC.h"
+#include "ImHelpers.h"
 
 class UIManager
 {
 public:
-	UIManager();
-
 	void setup();
-	void draw();
-	void updateAppMode(CVC::APP_MODE& appMode);
-	void updateTrackedColor(float trackedColor[4]);
-	void getGuiParams(int& threshold, int& numContours, float& minArea, float& maxArea) const;
+	void draw(CVC::APP_MODE& appMode, std::vector<std::string>& appModes, int& threshold, int& numContoursConsidered, float& minArea, float& maxArea, ofFloatColor& normalizedColor, ofColor& dominantColor);
+	bool isAppModeChanged(CVC::APP_MODE& appMode, int& currentListBoxIndex, std::vector<std::string>& appModes);
 
 private:
 	ofxImGui::Gui m_gui;
-	int m_threshold; 
-	int m_numContoursConsidered;
-	float m_minArea;
-	float m_maxArea;
 
-	float m_trackedColor[4];
 
-	std::vector<std::string> m_appModes;
-	int m_currentAppModeIndex;
 };

@@ -11,6 +11,9 @@
 
 class ofApp : public ofBaseApp {
 public:
+    // assets
+    ofImage m_cam01;
+    
 	ofVideoPlayer m_videoPlayer;
 	ofVideoGrabber m_videoGrabber;
 	bool m_videoResolutionConflict;

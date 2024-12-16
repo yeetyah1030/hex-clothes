@@ -2,6 +2,9 @@
 
 // SETUP --------------------------------------------------------------
 void ofApp::setup() {
+    // load image
+    m_cam01.load("cam01.png");
+    
     // app setup
     ofSetWindowShape(CVC::APP_WINDOW_WIDTH, CVC::APP_WINDOW_HEIGHT);
     ofSetFrameRate(CVC::APP_DESIRED_FRAMERATE);
@@ -115,10 +118,15 @@ void ofApp::update() {
 
 // DRAW --------------------------------------------------------------
 void ofApp::draw() {
+    
     // draw videos
     ofSetColor(255, 255, 255);
     m_grayscaleDiffImage.draw(CVC::VIDEO_BORDER_SIZE, CVC::VIDEO_BORDER_SIZE);
-    m_colorImage.draw(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2.0f, CVC::VIDEO_BORDER_SIZE);
+    
+    // center colorImage
+    float x1 = (ofGetWidth() - m_colorImage.getWidth()) / 2;
+    float y1 = (ofGetHeight() - m_colorImage.getHeight()) / 2.4;
+    m_colorImage.draw(x1, y1);
 
     // draw contours
     static ofVec2f contourCenter;
@@ -150,6 +158,13 @@ void ofApp::draw() {
                 contourCenter.y + 20.0f);
         }
     }
+    
+    // draw image in center
+    ofSetColor(255, 255, 255);
+    float x2 = (ofGetWidth() - m_cam01.getWidth()) / 2;
+    float y2 = (ofGetHeight() - m_cam01.getHeight()) / 2;
+    m_cam01.draw(x2, y2);
+    
     ofPopMatrix();
 
     // draw gui

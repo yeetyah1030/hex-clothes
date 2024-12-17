@@ -5,11 +5,11 @@
 
 // This class is responsible for analyzing a single input colour based 
 // on colour theory principles (complementary, analogous, triadic) and producing results for display
-class ColourTheory
+class ColorTheory
 {
 public:
 	void drawAll();
-	void calculateAllColours(const ofColor& colour);
+	void calculateAllColors(const ofColor& colour);
 	void displayComplementaryResult(int x, int y);
 	void displayAnalogousResult(int x, int y);
 	void displayTriadicResult(int x, int y);
@@ -21,16 +21,16 @@ private:
 	std::vector<ofColor> triadicRGB;
 
 	// Complementary colours are calculated by inverting the RGB values
-	void calculateComplementary(const ofColor& colour);
+	void calculateComplementary(const ofColor& color);
 
 	// Analogous colours are determined by shifting the hue of the base colour by
 	// ±30 degrees in the HSV colour space
-	void calculateAnalogous(const ofColor& colour);
+	void calculateAnalogous(const ofColor& color);
 
 	// Triadic colours are calculated by shifting the hue by 
 	// ±120 degrees in the HSV colour space
-	void calculateTriadic(const ofColor& colour);
+	void calculateTriadic(const ofColor& color);
 
 	std::string toHex(const ofColor& color);
-	void displayColour(int x, int y, ofColor colour);
+	void displayColor(int x, int y, ofColor color);
 };

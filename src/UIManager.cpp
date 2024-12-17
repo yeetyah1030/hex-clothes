@@ -5,7 +5,7 @@ void UIManager::setup()
 	m_gui.setup();
 }
 
-void UIManager::draw(CVC::APP_MODE& appMode, std::vector<std::string>& appModes, int& threshold, int& numContoursConsidered, float& minArea, float& maxArea, ofFloatColor& normalizedColor, ofColor& dominantColor, ofImage cam01)
+void UIManager::draw(CVC::APP_MODE& appMode, std::vector<std::string>& appModes, ofFloatColor& normalizedColor, ofColor& dominantColor, ofImage cam01)
 {
 	ofPushMatrix();
 	{
@@ -18,7 +18,7 @@ void UIManager::draw(CVC::APP_MODE& appMode, std::vector<std::string>& appModes,
 	}
 	ofPopMatrix();
 	
-	drawGui(appMode, appModes, threshold, numContoursConsidered, minArea, maxArea, normalizedColor, dominantColor);
+	drawGui(appMode, appModes, normalizedColor, dominantColor);
 
 	updateColorTheory(dominantColor);
 
@@ -38,48 +38,63 @@ void UIManager::draw(CVC::APP_MODE& appMode, std::vector<std::string>& appModes,
 	std::string feedback = m_colorTheory.getFeedback((CVC::ColorMode)m_selectedColorMode);
 	ofSetColor(255, 255, 255);
 	ofDrawBitmapString(feedback, 20, 400);
+
+    ofDrawBitmapString("Pause the video with spacebar!", 20, 500);
 }
 
-void UIManager::drawGui(CVC::APP_MODE& appMode, std::vector<std::string>& appModes, int& threshold, int& numContoursConsidered, float& minArea, float& maxArea, ofFloatColor& normalizedColor, ofColor& dominantColor)
+void UIManager::drawGui(CVC::APP_MODE& appMode, std::vector<std::string>& appModes, ofFloatColor& normalizedColor, ofColor& dominantColor)
 {
+    m_gui.begin();
+    {
+        ImGui::SetNextWindowSize(ImVec2(250, 280), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, 10));
 
-	m_gui.begin();
-	{
-		ImGui::Text("Color Detection");
-		ImGui::SliderInt("Threshold", &threshold, 0, 255);
-		ImGui::SliderInt("Contours", &numContoursConsidered, 0, 30);
-		ImGui::SliderFloat("Min. Area", &minArea, 0.0f, (float)(CVC::VIDEO_WIDTH * CVC::VIDEO_HEIGHT));
-		ImGui::SliderFloat("Max. Area", &maxArea, 0.0f, (float)(CVC::VIDEO_WIDTH * CVC::VIDEO_HEIGHT));
+        if (ImGui::Begin("Hex Clothes!", nullptr, ImGuiWindowFlags_NoCollapse))
+        {
+            ImGuiStyle& style = ImGui::GetStyle();
+            style.FramePadding = ImVec2(5, 5);
+            style.ItemSpacing = ImVec2(10, 10);
 
-		ImGui::Separator();
+            ImVec4* colors = style.Colors;
+            colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.4f, 0.8f, 1.0f);  // Pink
+            colors[ImGuiCol_TitleBgActive] = ImVec4(1.0f, 0.3f, 0.7f, 1.0f);  // Darker pink when active
+ 
+            colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 0.4f, 0.8f, 1.0f);  // Pink (normal state)
+            colors[ImGuiCol_ButtonHovered] = ImVec4(1.0f, 0.3f, 0.7f, 1.0f);  // Darker pink when active
 
-		ImGui::Text("\n Select an app state");
-		static int currentListBoxIndex = (int)appMode;
-		if (isAppModeChanged(appMode, currentListBoxIndex, appModes))
-		{
-			appMode = (CVC::APP_MODE)currentListBoxIndex;
-		}
+            ImGui::Text("Select an app state");
+            static int currentListBoxIndex = (int)appMode;
+            if (isAppModeChanged(appMode, currentListBoxIndex, appModes))
+            {
+                appMode = (CVC::APP_MODE)currentListBoxIndex;
+            }
 
-		ImGui::Text("Dominant Color:");
-		ImGui::ColorEdit3("Dominant Color", (float*)&normalizedColor);
+            ImGui::Separator();
+            ImGui::Text("Dominant Color:");
+            ImGui::ColorEdit3("Dominant \nColor", (float*)&normalizedColor);
 
-		ofSetColor(dominantColor);
-		ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 10, CVC::VIDEO_BORDER_SIZE + 10, 50, 50);
+            ImGui::Text("Hex Color: #%02X%02X%02X",
+                (int)dominantColor.r,
+                (int)dominantColor.g,
+                (int)dominantColor.b);
 
-		if (ImGui::RadioButton("Complementary", &m_selectedColorMode, CVC::COMPLEMENTARY))
-		{
+            ofSetColor(dominantColor);
+            ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 120, CVC::VIDEO_BORDER_SIZE + 35, 40, 40);
 
-		}
-		if (ImGui::RadioButton("Analogous", &m_selectedColorMode, CVC::ANALOGOUS))
-		{
+            if (ImGui::RadioButton("Complementary", &m_selectedColorMode, CVC::COMPLEMENTARY))
+            {
+            }
+            if (ImGui::RadioButton("Analogous", &m_selectedColorMode, CVC::ANALOGOUS))
+            {
+            }
+            if (ImGui::RadioButton("Triadic", &m_selectedColorMode, CVC::TRIADIC))
+            {
+            }
 
-		}
-		if (ImGui::RadioButton("Triadic", &m_selectedColorMode, CVC::TRIADIC))
-		{
-
-		}
-	}
-	m_gui.end();
+            ImGui::End(); 
+        }
+    }
+    m_gui.end();
 }
 
 bool UIManager::isAppModeChanged(CVC::APP_MODE& appMode, int& currentListBoxIndex, std::vector<std::string>& appModes)
@@ -89,5 +104,5 @@ bool UIManager::isAppModeChanged(CVC::APP_MODE& appMode, int& currentListBoxInde
 
 void UIManager::updateColorTheory(const ofColor& baseColor)
 {
-	m_colorTheory.calculateAllColours(baseColor);
+	m_colorTheory.calculateAllColors(baseColor);
 }

@@ -8,10 +8,13 @@
 #include "CVC.h"
 #include "ColorProcessor.h"
 #include "ofColor.h"
+#include "UIManager.h"
 
-class ofApp : public ofBaseApp {
+class ofApp : public ofBaseApp
+{
 public:
     // assets
+	ofImage m_background;
     ofImage m_cam01;
     
 	ofVideoPlayer m_videoPlayer;
@@ -29,8 +32,8 @@ public:
 	// dom colours
 	ofColor m_dominantColor;
 
-	//GUI
-	ofxImGui::Gui		m_gui;
+	UIManager m_uiManager;
+
 	int					m_threshold;
 	int					m_numContoursConsidered;
 	float				m_minArea;
@@ -57,6 +60,5 @@ public:
     void drawGrayscaleDiffImage();
     void drawCenteredColorImage();
     void drawContours();
-    void drawCenteredCameraImage();
     void drawHexColorText();
 };

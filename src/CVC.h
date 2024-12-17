@@ -3,7 +3,7 @@
 #include "ofMain.h"
 
 namespace CVC {
-    static const int APP_WINDOW_WIDTH = 800;
+    static const int APP_WINDOW_WIDTH = 820;
     static const int APP_WINDOW_HEIGHT = 800;
     static const int APP_DESIRED_FRAMERATE = 60;
     static const int CAM_DESIRED_FRAMERATE = 30;

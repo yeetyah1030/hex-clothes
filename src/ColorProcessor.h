@@ -1,14 +1,15 @@
 #pragma once
-
 #include "ofMain.h"
-#include "ofxOpenCv.h"
+#include "ofxCvColorImage.h"
+#include "ofxCvContourFinder.h"
+#include "ofxCvGrayscaleImage.h"
+#include <vector>
+#include <map>
 
 class ColorProcessor {
 public:
-    // constructor
     ColorProcessor();
 
-    // process colour & return results
     void processColor(ofxCvColorImage& image,
         int threshold,
         float minArea,
@@ -16,13 +17,12 @@ public:
         ofxCvContourFinder& contourFinder,
         ofxCvGrayscaleImage& grayscaleDiffImage);
 
-    // getters
+    ofColor findDominantColor(ofxCvColorImage& image);
     ofColor getDominantColor() const;
+    ofColor getAverageDominantColor();
 
 private:
-    // finding dom colour
-    ofColor findDominantColor(ofxCvColorImage& image);
-
-    // storing dom colour
     ofColor m_dominantColor;
+    std::vector<ofColor> m_dominantColorHistory;
+    const int MAX_COLOR_HISTORY = 10;
 };

@@ -9,10 +9,18 @@ void ColorProcessor::processColor(ofxCvColorImage& image,
     float minArea,
     float maxArea,
     ofxCvContourFinder& contourFinder,
-    ofxCvGrayscaleImage& grayscaleDiffImage) 
+    ofxCvGrayscaleImage& grayscaleDiffImage)
 {
     // find dom colour
     m_dominantColor = findDominantColor(image);
+
+    // add colour to history
+    m_dominantColorHistory.push_back(m_dominantColor);
+
+    // keep only the last MAX_COLOR_HISTORY colors
+    if (m_dominantColorHistory.size() > MAX_COLOR_HISTORY) {
+        m_dominantColorHistory.erase(m_dominantColorHistory.begin());
+    }
 
     // get img properties
     const int numChannelsPerPixel = image.getPixels().getNumChannels();
@@ -86,5 +94,30 @@ ofColor ColorProcessor::findDominantColor(ofxCvColorImage& image) {
 
 // dom colour getter
 ofColor ColorProcessor::getDominantColor() const {
-    return m_dominantColor;
+    if (m_dominantColorHistory.empty()) {
+        return m_dominantColor;
+    }
+    
+    // Return the most recently added color
+    return m_dominantColorHistory.back();
+}
+
+// new method to get average dominant color
+ofColor ColorProcessor::getAverageDominantColor() {
+    if (m_dominantColorHistory.empty()) {
+        return ofColor::black;
+    }
+
+    float totalR = 0, totalG = 0, totalB = 0;
+    for (const auto& color : m_dominantColorHistory) {
+        totalR += color.r;
+        totalG += color.g;
+        totalB += color.b;
+    }
+
+    return ofColor(
+        totalR / m_dominantColorHistory.size(),
+        totalG / m_dominantColorHistory.size(),
+        totalB / m_dominantColorHistory.size()
+    );
 }

@@ -18,4 +18,11 @@ namespace CVC {
         APP_VIDEO,
         APP_CAM
     } APP_MODE;
+
+    enum ColorMode
+    {
+        COMPLEMENTARY = 0,
+        ANALOGOUS,
+        TRIADIC
+    };
 };

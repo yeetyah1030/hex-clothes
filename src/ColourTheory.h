@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "CVC.h"
 
 // This class is responsible for analyzing a single input colour based 
 // on colour theory principles (complementary, analogous, triadic) and producing results for display
@@ -12,6 +13,7 @@ public:
 	void displayComplementaryResult(int x, int y);
 	void displayAnalogousResult(int x, int y);
 	void displayTriadicResult(int x, int y);
+	std::string getFeedback(CVC::ColorMode colorMode);
 
 private:
 	ofColor complementaryRGB;
@@ -29,5 +31,6 @@ private:
 	// ±120 degrees in the HSV colour space
 	void calculateTriadic(const ofColor& colour);
 
+	std::string toHex(const ofColor& color);
 	void displayColour(int x, int y, ofColor colour);
 };

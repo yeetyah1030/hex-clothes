@@ -48,4 +48,15 @@ public:
 	void draw();
 
 	void keyPressed(int key);
+    
+    // processor helpers
+    void processFrame(ofPixels& pixels, bool resolutionConflict);
+    void updateDominantColor();
+    
+    // drawing helpers
+    void drawGrayscaleDiffImage();
+    void drawCenteredColorImage();
+    void drawContours();
+    void drawCenteredCameraImage();
+    void drawHexColorText();
 };

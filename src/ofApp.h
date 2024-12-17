@@ -11,21 +11,6 @@
 
 class ofApp : public ofBaseApp {
 public:
-    // setup helper:
-    // Helper functions for setup
-    void loadResources();
-    void setupApp();
-    void setupCamera();
-    void setupVideo();
-    void allocateCVImages();
-    void initializeVariables();
-    void setupGUI();
-    void setupAppModes();
-    
-    // processor helper:
-    
-    
-    
     // assets
     ofImage m_cam01;
     
@@ -67,4 +52,11 @@ public:
     // processor helpers
     void processFrame(ofPixels& pixels, bool resolutionConflict);
     void updateDominantColor();
+    
+    // drawing helpers
+    void drawGrayscaleDiffImage();
+    void drawCenteredColorImage();
+    void drawContours();
+    void drawCenteredCameraImage();
+    void drawHexColorText();
 };

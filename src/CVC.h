@@ -10,7 +10,7 @@ namespace CVC {
 
     static const std::string VIDEO_PATH_COLOR = "tupperware.mov";
     static const int VIDEO_WIDTH = 250;
-    static const int VIDEO_HEIGHT = 250;
+    static const int VIDEO_HEIGHT = 280;
 
     static const int VIDEO_BORDER_SIZE = 10;
 

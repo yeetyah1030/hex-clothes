@@ -74,49 +74,14 @@ void ofApp::update() {
 void ofApp::draw() {
     
     // draw videos
-    ofSetColor(255, 255, 255, 0); // make it transparent
-    m_grayscaleDiffImage.draw(CVC::VIDEO_BORDER_SIZE, CVC::VIDEO_BORDER_SIZE);
-    ofSetColor(255, 255, 255, 255); // reset to opaque
+    drawGrayscaleDiffImage();
+    drawCenteredColorImage();
     
-    // center colorImage
-    float x1 = (ofGetWidth() - m_colorImage.getWidth()) / 2;
-    float y1 = (ofGetHeight() - m_colorImage.getHeight()) / 2.4;
-    m_colorImage.draw(x1, y1);
-
     // draw contours
-    static ofVec2f contourCenter;
-    static float contourArea;
-
-    ofPushMatrix();
-    {
-        ofTranslate(CVC::VIDEO_BORDER_SIZE, CVC::VIDEO_BORDER_SIZE);
-
-        // loop through blobs and show debug info
-        for (int i = 0; i < m_contourFinder.nBlobs; i++) {
-            contourCenter.set(m_contourFinder.blobs[i].boundingRect.getCenter().x,
-                m_contourFinder.blobs[i].boundingRect.getCenter().y);
-            contourArea = m_contourFinder.blobs[i].area;
-
-            // debug info
-            /*m_contourFinder.blobs[i].draw();
-            ofSetColor(ofColor::coral);
-            ofDrawCircle(contourCenter.x, contourCenter.y, 5.0f);
-            ofDrawBitmapString("Centre: " + ofToString(contourCenter.x) + "," + ofToString(contourCenter.y),
-                m_contourFinder.blobs[i].boundingRect.getMaxX() + CVC::VIDEO_BORDER_SIZE,
-                contourCenter.y);
-            ofDrawBitmapString("Area: " + ofToString(contourArea),
-                m_contourFinder.blobs[i].boundingRect.getMaxX() + CVC::VIDEO_BORDER_SIZE,
-                contourCenter.y + 20.0f);*/
-        }
-    }
+    drawContours();
     
-    // draw image in center
-    ofSetColor(255, 255, 255);
-    float x2 = (ofGetWidth() - m_cam01.getWidth()) / 2;
-    float y2 = (ofGetHeight() - m_cam01.getHeight()) / 2;
-    m_cam01.draw(x2, y2);
-    
-    ofPopMatrix();
+    // draw camera
+    drawCenteredCameraImage();
 
     // draw gui
     m_gui.begin();
@@ -148,26 +113,11 @@ void ofApp::draw() {
 
         // draw a rectangle with the dom color
         ofSetColor(m_dominantColor);
-        ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 10,
-            CVC::VIDEO_BORDER_SIZE + 10, 50, 50);
+        ofDrawRectangle(CVC::VIDEO_WIDTH + CVC::VIDEO_BORDER_SIZE * 2 + 120, CVC::VIDEO_BORDER_SIZE + 35, 40, 40);
     }
     m_gui.end();
     
-    // draw hex color text at top center of screen
-    ofSetColor(255, 255, 255); // white text
-    char hexColorText[20];
-    snprintf(hexColorText, sizeof(hexColorText), "Hex Color: #%02X%02X%02X",
-        (int)m_dominantColor.r,
-        (int)m_dominantColor.g,
-        (int)m_dominantColor.b);
-
-    // calc horizontal center position
-    float textX = (ofGetWidth() / 2.0) - (strlen(hexColorText) * 4);
-    float textY = 30;
-    ofDrawBitmapString(hexColorText, textX, textY);
-
-    // reset color to dominant color after drawing text
-    ofSetColor(m_dominantColor);
+    drawHexColorText();
 }
 
 // FUNCTIONS --------------------------------------------------------------
@@ -217,5 +167,66 @@ void ofApp::updateDominantColor() {
         m_normalizedColor.b = m_dominantColor.b / 255.0f;
     }
 }
+
+// drawing helpers
+void ofApp::drawGrayscaleDiffImage() {
+    ofSetColor(255, 255, 255, 0); // make it transparent
+    m_grayscaleDiffImage.draw(CVC::VIDEO_BORDER_SIZE, CVC::VIDEO_BORDER_SIZE);
+    ofSetColor(255, 255, 255, 255); // reset to opaque
+}
+
+void ofApp::drawCenteredColorImage() {
+    float x = (ofGetWidth() - m_colorImage.getWidth()) / 2;
+    float y = (ofGetHeight() - m_colorImage.getHeight()) / 2.4;
+    m_colorImage.draw(x, y);
+}
+
+void ofApp::drawContours() {
+    static ofVec2f contourCenter;
+    static float contourArea;
+
+    ofPushMatrix();
+    {
+        ofTranslate(CVC::VIDEO_BORDER_SIZE, CVC::VIDEO_BORDER_SIZE);
+        // loop through blobs and show debug info
+        for (int i = 0; i < m_contourFinder.nBlobs; i++) {
+            contourCenter.set(m_contourFinder.blobs[i].boundingRect.getCenter().x,
+                m_contourFinder.blobs[i].boundingRect.getCenter().y);
+            contourArea = m_contourFinder.blobs[i].area;
+        }
+    }
+    ofPopMatrix();
+}
+
+void ofApp::drawCenteredCameraImage() {
+    ofSetColor(255, 255, 255);
+    float x = (ofGetWidth() - m_cam01.getWidth()) / 2;
+    float y = (ofGetHeight() - m_cam01.getHeight()) / 2;
+    m_cam01.draw(x, y);
+}
+
+void ofApp::drawHexColorText() {
+    // Set color to white for text
+    ofSetColor(255, 255, 255); // white text
+
+    // Prepare the hex color string
+    char hexColorText[50];
+    snprintf(hexColorText, sizeof(hexColorText), "Most Frequent Colour: #%02X%02X%02X",
+        (int)m_dominantColor.r,
+        (int)m_dominantColor.g,
+        (int)m_dominantColor.b);
+
+    // Calculate the horizontal center position
+    float textX = (ofGetWidth() / 2.0) - (strlen(hexColorText) * 4);
+    float textY = 30;  // Vertical position at the top
+
+    // Draw the text on screen
+    ofDrawBitmapString(hexColorText, textX, textY);
+
+    // Reset color to the dominant color after drawing text
+    ofSetColor(m_dominantColor);
+}
+
+
 
 

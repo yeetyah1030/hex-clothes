@@ -70,7 +70,8 @@ void ofApp::update() {
 
             // update dominant color with normalized values
             if (m_contourFinder.nBlobs > 0) {
-                m_dominantColor = m_colorProcessor.getDominantColor();
+                // Use getAverageDominantColor instead of getDominantColor
+                m_dominantColor = m_colorProcessor.getAverageDominantColor();
 
                 // normalize color values to 0.0-1.0 range
                 m_normalizedColor.r = m_dominantColor.r / 255.0f;
@@ -79,7 +80,7 @@ void ofApp::update() {
             }
         }
     }
-                                 break;
+    break;
 
     case CVC::APP_MODE::APP_CAM: {
         if (m_camPaused == false) {
@@ -103,16 +104,15 @@ void ofApp::update() {
             );
 
             if (m_contourFinder.nBlobs > 0) {
-                m_dominantColor = m_colorProcessor.getDominantColor();
+                m_dominantColor = m_colorProcessor.getAverageDominantColor();
 
                 m_normalizedColor.r = m_dominantColor.r / 255.0f;
                 m_normalizedColor.g = m_dominantColor.g / 255.0f;
                 m_normalizedColor.b = m_dominantColor.b / 255.0f;
-
             }
         }
     }
-                               break;
+    break;
     }
 }
 
@@ -183,6 +183,12 @@ void ofApp::draw() {
         if (ofxImGui::VectorCombo("App Mode", &currentListBoxIndex, m_appModes)) {
             m_appMode = (CVC::APP_MODE)currentListBoxIndex;
         }
+        
+        // hex color display
+        ImGui::Text("Hex Color: #%02X%02X%02X",
+            (int)m_dominantColor.r,
+            (int)m_dominantColor.g,
+            (int)m_dominantColor.b);
 
         // dominant color display
         ImGui::Text("Dominant Color:");
@@ -195,6 +201,22 @@ void ofApp::draw() {
             CVC::VIDEO_BORDER_SIZE + 10, 50, 50);
     }
     m_gui.end();
+    
+    // draw hex color text at top center of screen
+    ofSetColor(255, 255, 255); // white text
+    char hexColorText[20];
+    snprintf(hexColorText, sizeof(hexColorText), "Hex Color: #%02X%02X%02X",
+        (int)m_dominantColor.r,
+        (int)m_dominantColor.g,
+        (int)m_dominantColor.b);
+
+    // calc horizontal center position
+    float textX = (ofGetWidth() / 2.0) - (strlen(hexColorText) * 4);
+    float textY = 30;
+    ofDrawBitmapString(hexColorText, textX, textY);
+
+    // reset color to dominant color after drawing text
+    ofSetColor(m_dominantColor);
 }
 
 // FUNCTIONS --------------------------------------------------------------
